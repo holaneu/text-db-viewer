@@ -93,13 +93,51 @@
       }
     }
 
+    /* Add these new styles */
+    .file-input-wrapper {
+      position: relative;
+      width: 100%;
+      margin: 1rem 0;
+    }
+    
+    .file-input-wrapper input[type="file"] {
+      width: 100%;
+      padding: 1rem;
+      background: #2a2a2a;
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px; /* Prevent zoom on mobile */
+    }
+    
+    .loading-indicator {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      z-index: 1000;
+    }
+    
+    @supports (-webkit-touch-callout: none) {
+      /* iOS-specific styles */
+      .file-input-wrapper input[type="file"] {
+        padding: 1.2rem;
+      }
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>Databázový prohlížeč</h1>
-    <!-- Updated file input -->
-    <input type="file" id="fileInput" accept=".json" style="width: 100%; padding: 1rem 0;" />
+    <div class="file-input-wrapper">
+      <input type="file" id="fileInput" accept=".json" />
+    </div>
+    <div id="loadingIndicator" class="loading-indicator">Načítání souboru...</div>
   </header>
   <main>
     <div id="configSection" class="section" style="display:none;">
@@ -125,6 +163,93 @@
   </main>
 
   <script>
+    class FileManager {
+      constructor() {
+        this.fileInput = document.getElementById("fileInput");
+        this.loadingIndicator = document.getElementById("loadingIndicator");
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        this.fileInput.addEventListener("change", (e) => this.handleFileSelect(e));
+        this.fileInput.addEventListener("click", () => {
+          // Reset value to ensure change event fires even if same file is selected
+          this.fileInput.value = '';
+        });
+      }
+
+      showLoading() {
+        this.loadingIndicator.style.display = 'block';
+      }
+
+      hideLoading() {
+        this.loadingIndicator.style.display = 'none';
+      }
+
+      async handleFileSelect(event) {
+        try {
+          const file = event.target.files?.[0];
+          if (!file) return;
+
+          this.showLoading();
+          const text = await this.readFileAsText(file);
+          const data = this.parseJSON(text);
+          
+          if (!data) {
+            throw new Error("Invalid JSON data");
+          }
+
+          if (data.collections && typeof data.collections === "object") {
+            const keys = Object.keys(data.collections);
+            const choice = keys.length === 1 ? keys[0] : prompt("Zadejte název kolekce:\n" + keys.join(", "));
+            rawData = data.collections[choice] || [];
+          } else if (Array.isArray(data)) {
+            rawData = data;
+          } else {
+            throw new Error("Neplatný formát souboru - očekáván JSON array nebo collections objekt");
+          }
+
+          extractAllFields();
+          renderConfigUI();
+          document.getElementById("configSection").style.display = "block";
+        } catch (error) {
+          console.error("File processing error:", error);
+          alert(`Chyba při zpracování souboru: ${error.message}`);
+        } finally {
+          this.hideLoading();
+        }
+      }
+
+      readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error("Chyba při čtení souboru"));
+          
+          // Handle mobile Safari specifically
+          reader.onprogress = (event) => {
+            if (event.loaded && event.total) {
+              console.log(`Loading: ${Math.round((event.loaded / event.total) * 100)}%`);
+            }
+          };
+          
+          reader.readAsText(file);
+        });
+      }
+
+      parseJSON(text) {
+        try {
+          return JSON.parse(text);
+        } catch (error) {
+          throw new Error("Neplatný JSON formát");
+        }
+      }
+    }
+
+    // Initialize file manager
+    const fileManager = new FileManager();
+
     let rawData = null;
     let activeItems = [];
     let allFields = [];
@@ -137,53 +262,6 @@
       sort1: 'not used',
       sort2: 'not used'
     };
-
-    // Replace the file input event listener with this improved version
-    document.getElementById("fileInput").addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      
-      reader.addEventListener('load', (event) => {
-        try {
-          const text = event.target.result;
-          const data = JSON.parse(text);
-          if (data.collections && typeof data.collections === "object") {
-            const keys = Object.keys(data.collections);
-            const choice = keys.length === 1 ? keys[0] : prompt("Zadejte název kolekce:\n" + keys.join(", "));
-            rawData = data.collections[choice] || [];
-          } else if (Array.isArray(data)) {
-            rawData = data;
-          } else {
-            alert("Neplatný formát souboru.");
-            return;
-          }
-          extractAllFields();
-          renderConfigUI();
-          document.getElementById("configSection").style.display = "block";
-        } catch (err) {
-          console.error("Error parsing JSON:", err);
-          alert("Chyba při čtení JSON: " + err.message);
-        }
-      });
-
-      reader.addEventListener('error', (error) => {
-        console.error("FileReader error:", error);
-        alert("Nepodařilo se načíst soubor: " + error.message);
-      });
-
-      // Add progress event for large files
-      reader.addEventListener('progress', (event) => {
-        if (event.loaded && event.total) {
-          const percent = (event.loaded / event.total) * 100;
-          console.log(`Progress: ${Math.round(percent)}%`);
-        }
-      });
-
-      // Start reading the file
-      reader.readAsText(file);
-    });
 
     function extractAllFields() {
       const fieldSet = new Set();
