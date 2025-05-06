@@ -140,25 +140,33 @@
     document.getElementById("fileInput").addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      const text = await file.text();
-      try {
-        const data = JSON.parse(text);
-        if (data.collections && typeof data.collections === "object") {
-          const keys = Object.keys(data.collections);
-          const choice = keys.length === 1 ? keys[0] : prompt("Zadejte název kolekce:\n" + keys.join(", "));
-          rawData = data.collections[choice] || [];
-        } else if (Array.isArray(data)) {
-          rawData = data;
-        } else {
-          alert("Neplatný formát souboru.");
-          return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const text = event.target.result;
+          const data = JSON.parse(text);
+          if (data.collections && typeof data.collections === "object") {
+            const keys = Object.keys(data.collections);
+            const choice = keys.length === 1 ? keys[0] : prompt("Zadejte název kolekce:\n" + keys.join(", "));
+            rawData = data.collections[choice] || [];
+          } else if (Array.isArray(data)) {
+            rawData = data;
+          } else {
+            alert("Neplatný formát souboru.");
+            return;
+          }
+          extractAllFields();
+          renderConfigUI();
+          document.getElementById("configSection").style.display = "block";
+        } catch (err) {
+          alert("Chyba při čtení JSON: " + err.message);
         }
-        extractAllFields();
-        renderConfigUI();
-        document.getElementById("configSection").style.display = "block";
-      } catch (err) {
-        alert("Chyba při čtení JSON: " + err.message);
-      }
+      };
+      reader.onerror = () => {
+        alert("Nepodařilo se načíst soubor.");
+      };
+      reader.readAsText(file);
     });
 
     function extractAllFields() {
