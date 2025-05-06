@@ -1,6 +1,6 @@
-# JSON Database Viewer
+# Text Database Viewer
 
-A simple browser-based tool for viewing and exploring JSON data files with advanced filtering and sorting capabilities.
+A simple browser-based tool for viewing and exploring JSON and text data files with advanced filtering and sorting capabilities.
 
 ## Features
 
