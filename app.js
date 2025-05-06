@@ -1,0 +1,302 @@
+class FileManager {
+  constructor() {
+    this.fileInput = document.getElementById("fileInput");
+    this.loadingIndicator = document.getElementById("loadingIndicator");
+    this.setupEventListeners();
+  }
+
+  setupEventListeners() {
+    this.fileInput.addEventListener("change", (e) => this.handleFileSelect(e));
+    this.fileInput.addEventListener("click", () => {
+      // Reset value to ensure change event fires even if same file is selected
+      this.fileInput.value = '';
+    });
+  }
+
+  showLoading() {
+    this.loadingIndicator.style.display = 'block';
+  }
+
+  hideLoading() {
+    this.loadingIndicator.style.display = 'none';
+  }
+
+  async handleFileSelect(event) {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      this.showLoading();
+      const text = await this.readFileAsText(file);
+      const data = this.parseJSON(text);
+      
+      if (!data) {
+        throw new Error("Invalid JSON data");
+      }
+
+      if (data.collections && typeof data.collections === "object") {
+        const keys = Object.keys(data.collections);
+        const choice = keys.length === 1 ? keys[0] : prompt("Zadejte název kolekce:\n" + keys.join(", "));
+        rawData = data.collections[choice] || [];
+      } else if (Array.isArray(data)) {
+        rawData = data;
+      } else {
+        throw new Error("Neplatný formát souboru - očekáván JSON array nebo collections objekt");
+      }
+
+      extractAllFields();
+      renderConfigUI();
+      document.getElementById("configSection").style.display = "block";
+    } catch (error) {
+      console.error("File processing error:", error);
+      alert(`Chyba při zpracování souboru: ${error.message}`);
+    } finally {
+      this.hideLoading();
+    }
+  }
+
+  readFileAsText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Chyba při čtení souboru"));
+      
+      // Handle mobile Safari specifically
+      reader.onprogress = (event) => {
+        if (event.loaded && event.total) {
+          console.log(`Loading: ${Math.round((event.loaded / event.total) * 100)}%`);
+        }
+      };
+      
+      reader.readAsText(file);
+    });
+  }
+
+  parseJSON(text) {
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      throw new Error("Neplatný JSON formát");
+    }
+  }
+}
+
+// Initialize file manager
+const fileManager = new FileManager();
+
+let rawData = null;
+let activeItems = [];
+let allFields = [];
+let selectedFields = [];
+let fieldMap = {
+  search: 'not used',
+  filter1: 'not used',
+  filter2: 'not used',
+  filter3: 'not used',
+  sort1: 'not used',
+  sort2: 'not used'
+};
+
+function extractAllFields() {
+  const fieldSet = new Set();
+  rawData.forEach(item => {
+    collectFields(item, '', fieldSet);
+  });
+  allFields = Array.from(fieldSet).sort();
+}
+
+function collectFields(obj, prefix, set) {
+  for (const key in obj) {
+    const path = prefix ? prefix + '.' + key : key;
+    if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+      collectFields(obj[key], path, set);
+    } else {
+      set.add(path);
+    }
+  }
+}
+
+function renderConfigUI() {
+  const mapping = ['search', 'filter1', 'filter2', 'filter3', 'sort1', 'sort2'];
+  const container = document.getElementById("mappingControls");
+  container.innerHTML = '';
+  
+  mapping.forEach(role => {
+    const row = document.createElement("div");
+    row.className = 'form-row';
+    
+    const label = document.createElement("label");
+    label.textContent = role.toUpperCase();
+    
+    const select = document.createElement("select");
+    select.id = `map_${role}`;
+    select.innerHTML = '<option value="not used">not used</option>' + 
+      allFields.map(f => `<option value="${f}">${f}</option>`).join('');
+    
+    row.appendChild(label);
+    row.appendChild(select);
+    container.appendChild(row);
+  });
+
+  // Update display field selector layout
+  const displayFieldSelector = document.getElementById("displayFieldSelector");
+  displayFieldSelector.innerHTML = '';
+  allFields.forEach(f => {
+    const div = document.createElement("div");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = f;
+    checkbox.id = `chk_${f}`;
+    const label = document.createElement("label");
+    label.htmlFor = `chk_${f}`;
+    label.textContent = f;
+    div.appendChild(checkbox);
+    div.appendChild(label);
+    displayFieldSelector.appendChild(div);
+  });
+}
+
+function applyConfiguration() {
+  const keys = Object.keys(fieldMap);
+  keys.forEach(k => {
+    const sel = document.getElementById(`map_${k}`);
+    fieldMap[k] = sel.value;
+  });
+
+  selectedFields = allFields.filter(f => {
+    const chk = document.getElementById(`chk_${f}`);
+    return chk.checked;
+  });
+
+  renderControls();
+  document.getElementById("controlsSection").style.display = "block";
+  filterAndDisplay();
+}
+
+function renderControls() {
+  const filterKeys = ['filter1', 'filter2', 'filter3'];
+  const container = document.getElementById("filterControls");
+  container.innerHTML = '';
+  
+  filterKeys.forEach(fk => {
+    if (fieldMap[fk] !== 'not used') {
+      const values = getUniqueValues(fieldMap[fk]);
+      const div = document.createElement("div");
+      div.className = 'form-row';
+      
+      const label = document.createElement("label");
+      label.textContent = fieldMap[fk];
+      
+      const select = document.createElement("select");
+      select.id = `ctrl_${fk}`;
+      select.innerHTML = '<option value="">---</option>' + 
+        values.map(v => `<option value="${v}">${v}</option>`).join('');
+      
+      div.appendChild(label);
+      div.appendChild(select);
+      container.appendChild(div);
+    }
+  });
+
+  const sortSel = document.getElementById("sortControl");
+  sortSel.innerHTML = '';
+  ['sort1', 'sort2'].forEach(k => {
+    if (fieldMap[k] !== 'not used') {
+      const f = fieldMap[k];
+      sortSel.innerHTML += `<option value="${f}::desc">${f} (descending)</option>`;
+      sortSel.innerHTML += `<option value="${f}::asc">${f} (ascending)</option>`;          
+    }
+  });
+
+  document.getElementById("searchInput").addEventListener("input", debounce(filterAndDisplay, 300));
+  filterKeys.forEach(fk => {
+    const ctrl = document.getElementById(`ctrl_${fk}`);
+    if (ctrl) ctrl.addEventListener("change", filterAndDisplay);
+  });
+  sortSel.addEventListener("change", filterAndDisplay);
+}
+
+function getUniqueValues(fieldPath) {
+  const set = new Set();
+  rawData.forEach(item => {
+    const val = getByPath(item, fieldPath);
+    if (val !== undefined) set.add(String(val));
+  });
+  return Array.from(set).sort();
+}
+
+function getByPath(obj, path) {
+  return path.split('.').reduce((acc, key) => acc && acc[key], obj);
+}
+
+function filterAndDisplay() {
+  let filtered = [...rawData];
+
+  ['filter1', 'filter2', 'filter3'].forEach(fk => {
+    const field = fieldMap[fk];
+    if (field !== 'not used') {
+      const sel = document.getElementById(`ctrl_${fk}`);
+      const val = sel?.value;
+      if (val) {
+        filtered = filtered.filter(item => String(getByPath(item, field)) === val);
+      }
+    }
+  });
+
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  if (q) {
+    filtered = filtered.filter(item =>
+      selectedFields.some(f =>
+        String(getByPath(item, f)).toLowerCase().includes(q)
+      )
+    );
+  }
+
+  const sortSel = document.getElementById("sortControl");
+  const sortVal = sortSel.value;
+  if (sortVal) {
+    const [f, dir] = sortVal.split("::");
+    filtered.sort((a, b) => {
+      const va = normalizeValue(getByPath(a, f));
+      const vb = normalizeValue(getByPath(b, f));
+      if (va < vb) return dir === 'asc' ? -1 : 1;
+      if (va > vb) return dir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  renderResults(filtered);
+}
+
+function normalizeValue(val) {
+  if (val === null || val === undefined) return '';
+  if (!isNaN(val)) return Number(val);
+  const d = Date.parse(val);
+  if (!isNaN(d)) return d;
+  return String(val).toLowerCase();
+}
+
+function renderResults(items) {
+  const container = document.getElementById("results");
+  container.innerHTML = '';
+  items.forEach(item => {
+    const div = document.createElement("div");
+    div.className = 'item-card';
+    selectedFields.forEach(f => {
+      const val = getByPath(item, f);
+      const p = document.createElement("p");
+      p.textContent = `${f}: ${val}`;
+      div.appendChild(p);
+    });
+    container.appendChild(div);
+  });
+}
+
+function debounce(fn, delay) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), delay);
+  };
+}
