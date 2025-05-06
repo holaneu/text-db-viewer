@@ -98,7 +98,8 @@
 <body>
   <header>
     <h1>Databázový prohlížeč</h1>
-    <input type="file" id="fileInput" accept=".json" />
+    <!-- Updated file input -->
+    <input type="file" id="fileInput" accept=".json" style="width: 100%; padding: 1rem 0;" />
   </header>
   <main>
     <div id="configSection" class="section" style="display:none;">
@@ -137,12 +138,14 @@
       sort2: 'not used'
     };
 
-    document.getElementById("fileInput").addEventListener("change", async (e) => {
+    // Replace the file input event listener with this improved version
+    document.getElementById("fileInput").addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = (event) => {
+      
+      reader.addEventListener('load', (event) => {
         try {
           const text = event.target.result;
           const data = JSON.parse(text);
@@ -160,12 +163,25 @@
           renderConfigUI();
           document.getElementById("configSection").style.display = "block";
         } catch (err) {
+          console.error("Error parsing JSON:", err);
           alert("Chyba při čtení JSON: " + err.message);
         }
-      };
-      reader.onerror = () => {
-        alert("Nepodařilo se načíst soubor.");
-      };
+      });
+
+      reader.addEventListener('error', (error) => {
+        console.error("FileReader error:", error);
+        alert("Nepodařilo se načíst soubor: " + error.message);
+      });
+
+      // Add progress event for large files
+      reader.addEventListener('progress', (event) => {
+        if (event.loaded && event.total) {
+          const percent = (event.loaded / event.total) * 100;
+          console.log(`Progress: ${Math.round(percent)}%`);
+        }
+      });
+
+      // Start reading the file
       reader.readAsText(file);
     });
 
