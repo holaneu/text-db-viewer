@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Databázový prohlížeč</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-color: #121212;
+      --text-color: #f5f5f5;
+      --accent-color: #2196f3;
+      --card-bg: #1e1e1e;
+      --border-color: #333;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    header, main {
+      padding: 1rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--accent-color);
+    }
+
+    .section {
+      margin-bottom: 2rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      background-color: var(--card-bg);
+    }
+
+    label, select, input, button {
+      display: block;
+      margin: 0.5rem 0;
+      font-size: 1rem;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 0.4rem;
+      background: #222;
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    details summary {
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--accent-color);
+    }
+
+    .item-card {
+      background-color: #2a2a2a;
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      padding: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 600px) {
+      .filter-row {
+        flex-direction: row;
+        gap: 1rem;
+      }
+      .filter-row > div {
+        flex: 1;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Databázový prohlížeč</h1>
+    <input type="file" id="fileInput" accept=".json" />
+  </header>
+  <main>
+    <div id="configSection" class="section" style="display:none;">
+      <details open>
+        <summary>🛠️ Nastavení zobrazení</summary>
+        <div id="mappingControls"></div>
+        <label>Zobrazit pole:</label>
+        <div id="displayFieldSelector"></div>
+        <button onclick="applyConfiguration()">Použít konfiguraci</button>
+      </details>
+    </div>
+
+    <div id="controlsSection" class="section" style="display:none;">
+      <input type="text" id="searchInput" placeholder="Hledat..." />
+      <div class="filter-row" id="filterControls"></div>
+      <label>Řazení:</label>
+      <select id="sortControl"></select>
+    </div>
+
+    <div id="resultsSection" class="section">
+      <div id="results"></div>
+    </div>
+  </main>
+
+  <script>
+    let rawData = null;
+    let activeItems = [];
+    let allFields = [];
+    let selectedFields = [];
+    let fieldMap = {
+      search: 'not used',
+      filter1: 'not used',
+      filter2: 'not used',
+      filter3: 'not used',
+      sort1: 'not used',
+      sort2: 'not used'
+    };
+
+    document.getElementById("fileInput").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      try {
+        const data = JSON.parse(text);
+        if (data.collections && typeof data.collections === "object") {
+          const keys = Object.keys(data.collections);
+          const choice = keys.length === 1 ? keys[0] : prompt("Zadejte název kolekce:\n" + keys.join(", "));
+          rawData = data.collections[choice] || [];
+        } else if (Array.isArray(data)) {
+          rawData = data;
+        } else {
+          alert("Neplatný formát souboru.");
+          return;
+        }
+        extractAllFields();
+        renderConfigUI();
+        document.getElementById("configSection").style.display = "block";
+      } catch (err) {
+        alert("Chyba při čtení JSON: " + err.message);
+      }
+    });
+
+    function extractAllFields() {
+      const fieldSet = new Set();
+      rawData.forEach(item => {
+        collectFields(item, '', fieldSet);
+      });
+      allFields = Array.from(fieldSet).sort();
+    }
+
+    function collectFields(obj, prefix, set) {
+      for (const key in obj) {
+        const path = prefix ? prefix + '.' + key : key;
+        if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+          collectFields(obj[key], path, set);
+        } else {
+          set.add(path);
+        }
+      }
+    }
+
+    function renderConfigUI() {
+      const mapping = ['search', 'filter1', 'filter2', 'filter3', 'sort1', 'sort2'];
+      const container = document.getElementById("mappingControls");
+      container.innerHTML = '';
+      mapping.forEach(role => {
+        const label = document.createElement("label");
+        label.textContent = role.toUpperCase();
+        const select = document.createElement("select");
+        select.id = `map_${role}`;
+        select.innerHTML = '<option value="not used">not used</option>' + allFields.map(f => `<option value="${f}">${f}</option>`).join('');
+        container.appendChild(label);
+        container.appendChild(select);
+      });
+
+      const displayFieldSelector = document.getElementById("displayFieldSelector");
+      displayFieldSelector.innerHTML = '';
+      allFields.forEach(f => {
+        const div = document.createElement("div");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = f;
+        checkbox.id = `chk_${f}`;
+        const label = document.createElement("label");
+        label.htmlFor = `chk_${f}`;
+        label.textContent = f;
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        displayFieldSelector.appendChild(div);
+      });
+    }
+
+    function applyConfiguration() {
+      const keys = Object.keys(fieldMap);
+      keys.forEach(k => {
+        const sel = document.getElementById(`map_${k}`);
+        fieldMap[k] = sel.value;
+      });
+
+      selectedFields = allFields.filter(f => {
+        const chk = document.getElementById(`chk_${f}`);
+        return chk.checked;
+      });
+
+      renderControls();
+      document.getElementById("controlsSection").style.display = "block";
+      filterAndDisplay();
+    }
+
+    function renderControls() {
+      const filterKeys = ['filter1', 'filter2', 'filter3'];
+      const container = document.getElementById("filterControls");
+      container.innerHTML = '';
+      filterKeys.forEach(fk => {
+        if (fieldMap[fk] !== 'not used') {
+          const values = getUniqueValues(fieldMap[fk]);
+          const div = document.createElement("div");
+          const label = document.createElement("label");
+          label.textContent = fieldMap[fk];
+          const select = document.createElement("select");
+          select.id = `ctrl_${fk}`;
+          select.innerHTML = '<option value="">---</option>' + values.map(v => `<option value="${v}">${v}</option>`).join('');
+          div.appendChild(label);
+          div.appendChild(select);
+          container.appendChild(div);
+        }
+      });
+
+      const sortSel = document.getElementById("sortControl");
+      sortSel.innerHTML = '';
+      ['sort1', 'sort2'].forEach(k => {
+        if (fieldMap[k] !== 'not used') {
+          const f = fieldMap[k];
+          sortSel.innerHTML += `<option value="${f}::asc">${f} (ascending)</option>`;
+          sortSel.innerHTML += `<option value="${f}::desc">${f} (descending)</option>`;
+        }
+      });
+
+      document.getElementById("searchInput").addEventListener("input", debounce(filterAndDisplay, 300));
+      filterKeys.forEach(fk => {
+        const ctrl = document.getElementById(`ctrl_${fk}`);
+        if (ctrl) ctrl.addEventListener("change", filterAndDisplay);
+      });
+      sortSel.addEventListener("change", filterAndDisplay);
+    }
+
+    function getUniqueValues(fieldPath) {
+      const set = new Set();
+      rawData.forEach(item => {
+        const val = getByPath(item, fieldPath);
+        if (val !== undefined) set.add(String(val));
+      });
+      return Array.from(set).sort();
+    }
+
+    function getByPath(obj, path) {
+      return path.split('.').reduce((acc, key) => acc && acc[key], obj);
+    }
+
+    function filterAndDisplay() {
+      let filtered = [...rawData];
+
+      ['filter1', 'filter2', 'filter3'].forEach(fk => {
+        const field = fieldMap[fk];
+        if (field !== 'not used') {
+          const sel = document.getElementById(`ctrl_${fk}`);
+          const val = sel?.value;
+          if (val) {
+            filtered = filtered.filter(item => String(getByPath(item, field)) === val);
+          }
+        }
+      });
+
+      const q = document.getElementById("searchInput").value.toLowerCase();
+      if (q) {
+        filtered = filtered.filter(item =>
+          selectedFields.some(f =>
+            String(getByPath(item, f)).toLowerCase().includes(q)
+          )
+        );
+      }
+
+      const sortSel = document.getElementById("sortControl");
+      const sortVal = sortSel.value;
+      if (sortVal) {
+        const [f, dir] = sortVal.split("::");
+        filtered.sort((a, b) => {
+          const va = normalizeValue(getByPath(a, f));
+          const vb = normalizeValue(getByPath(b, f));
+          if (va < vb) return dir === 'asc' ? -1 : 1;
+          if (va > vb) return dir === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+
+      renderResults(filtered);
+    }
+
+    function normalizeValue(val) {
+      if (val === null || val === undefined) return '';
+      if (!isNaN(val)) return Number(val);
+      const d = Date.parse(val);
+      if (!isNaN(d)) return d;
+      return String(val).toLowerCase();
+    }
+
+    function renderResults(items) {
+      const container = document.getElementById("results");
+      container.innerHTML = '';
+      items.forEach(item => {
+        const div = document.createElement("div");
+        div.className = 'item-card';
+        selectedFields.forEach(f => {
+          const val = getByPath(item, f);
+          const p = document.createElement("p");
+          p.textContent = `${f}: ${val}`;
+          div.appendChild(p);
+        });
+        container.appendChild(div);
+      });
+    }
+
+    function debounce(fn, delay) {
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), delay);
+      };
+    }
+  </script>
+</body>
+</html>
