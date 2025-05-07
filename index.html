@@ -1,43 +1,49 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Databázový prohlížeč</title>
+  <title>Database Viewer</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <header>
-    <h1>Databázový prohlížeč</h1>
+    <h1>Database Viewer</h1>
     <div class="file-input-wrapper">
       <input type="file" id="fileInput" accept=".json" />
     </div>
-    <div id="loadingIndicator" class="loading-indicator">Načítání souboru...</div>
+    <div id="loadingIndicator" class="loading-indicator">Loading file...</div>
   </header>
+
   <main>
-    <div id="configSection" class="section" style="display:none;">
-      <details open>
-        <summary>🛠️ Nastavení zobrazení</summary>
-        <div id="mappingControls"></div>
-        <label>Zobrazit pole:</label>
+    <div id="configSection" class="section hidden">
+      <details>
+        <summary>Display Settings</summary>
+        <label>Map controls:</label>
+        <div id="mappingControls" class="flex-columns"></div>
+        <div class="hr"></div>
+        <label>Show fields:</label>
         <div id="displayFieldSelector"></div>
-        <button onclick="applyConfiguration()">Použít konfiguraci</button>
+        <button onclick="applyConfiguration()">Apply Configuration</button>
       </details>
     </div>
 
-    <div id="controlsSection" class="section" style="display:none;">
-      <input type="text" id="searchInput" placeholder="Hledat..." />
-      <div class="filter-row" id="filterControls"></div>
-      <label>Řazení:</label>
-      <select id="sortControl"></select>
+    <div id="controlsSection" class="section hidden">
+      <input type="text" id="searchInput" placeholder="Search..." />
+      <div class="flex-columns" id="filterControls"></div>
+      <div class="hr"></div>
+      <div class="form-row">
+        <label>Sort by:</label>
+        <select id="sortControl"></select>
+      </div>
+      
     </div>
 
-    <div id="resultsSection" class="section">
+    <div id="resultsSection" class="section hidden">
       <div id="results"></div>
     </div>
   </main>
 
   <script src="./app.js"></script>
-  
 </body>
 </html>

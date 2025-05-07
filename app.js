@@ -1,3 +1,5 @@
+
+
 class FileManager {
   constructor() {
     this.fileInput = document.getElementById("fileInput");
@@ -14,11 +16,11 @@ class FileManager {
   }
 
   showLoading() {
-    this.loadingIndicator.style.display = 'block';
+    this.loadingIndicator.classList.remove('hidden');
   }
 
   hideLoading() {
-    this.loadingIndicator.style.display = 'none';
+    this.loadingIndicator.classList.add('hidden');
   }
 
   async handleFileSelect(event) {
@@ -46,7 +48,10 @@ class FileManager {
 
       extractAllFields();
       renderConfigUI();
-      document.getElementById("configSection").style.display = "block";
+      document.getElementById("configSection").classList.remove('hidden');
+      document.getElementById("resultsSection").classList.add('hidden');
+      const details = document.querySelector('#configSection details');
+      details.open = true;
     } catch (error) {
       console.error("File processing error:", error);
       alert(`Chyba při zpracování souboru: ${error.message}`);
@@ -85,17 +90,21 @@ class FileManager {
 // Initialize file manager
 const fileManager = new FileManager();
 
+const labels = {
+  "notUsed" : '- not used -',
+  "all" : "- all -",
+};
 let rawData = null;
 let activeItems = [];
 let allFields = [];
 let selectedFields = [];
 let fieldMap = {
-  search: 'not used',
-  filter1: 'not used',
-  filter2: 'not used',
-  filter3: 'not used',
-  sort1: 'not used',
-  sort2: 'not used'
+  search: labels.notUsed,
+  filter1: labels.notUsed,
+  filter2: labels.notUsed,
+  filter3: labels.notUsed,
+  sort1: labels.notUsed,
+  sort2: labels.notUsed
 };
 
 function extractAllFields() {
@@ -127,11 +136,11 @@ function renderConfigUI() {
     row.className = 'form-row';
     
     const label = document.createElement("label");
-    label.textContent = role.toUpperCase();
+    label.textContent = role;
     
     const select = document.createElement("select");
     select.id = `map_${role}`;
-    select.innerHTML = '<option value="not used">not used</option>' + 
+    select.innerHTML = `<option value="not used">${labels.notUsed}</option>` + 
       allFields.map(f => `<option value="${f}">${f}</option>`).join('');
     
     row.appendChild(label);
@@ -170,8 +179,11 @@ function applyConfiguration() {
   });
 
   renderControls();
-  document.getElementById("controlsSection").style.display = "block";
+  document.getElementById("controlsSection").classList.remove('hidden');
+  document.getElementById("resultsSection").classList.remove('hidden');
   filterAndDisplay();
+  const details = document.querySelector('#configSection details');
+  details.open = false;
 }
 
 function renderControls() {
@@ -190,7 +202,7 @@ function renderControls() {
       
       const select = document.createElement("select");
       select.id = `ctrl_${fk}`;
-      select.innerHTML = '<option value="">---</option>' + 
+      select.innerHTML = `<option value="">${labels.all}</option>` + 
         values.map(v => `<option value="${v}">${v}</option>`).join('');
       
       div.appendChild(label);
@@ -204,8 +216,8 @@ function renderControls() {
   ['sort1', 'sort2'].forEach(k => {
     if (fieldMap[k] !== 'not used') {
       const f = fieldMap[k];
-      sortSel.innerHTML += `<option value="${f}::desc">${f} (descending)</option>`;
-      sortSel.innerHTML += `<option value="${f}::asc">${f} (ascending)</option>`;          
+      sortSel.innerHTML += `<option value="${f}::desc">${f} (desc.)</option>`;
+      sortSel.innerHTML += `<option value="${f}::asc">${f} (asc.)</option>`;          
     }
   });
 
