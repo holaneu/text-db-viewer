@@ -50,6 +50,7 @@ class FileManager {
       renderConfigUI();
       document.getElementById("configSection").classList.remove('hidden');
       document.getElementById("resultsSection").classList.add('hidden');
+      document.getElementById("controlsSection").classList.add('hidden');      
       const details = document.querySelector('#configSection details');
       details.open = true;
     } catch (error) {
@@ -212,14 +213,25 @@ function renderControls() {
   });
 
   const sortSel = document.getElementById("sortControl");
+  const sortContainer = document.getElementById("sortContainer");
   sortSel.innerHTML = '';
+  let sortMappedFields = false;
+  console.log('sortMappedFields', sortMappedFields);
   ['sort1', 'sort2'].forEach(k => {
     if (fieldMap[k] !== 'not used') {
+      sortMappedFields = true;
+      console.log('sortMappedFields', sortMappedFields);
       const f = fieldMap[k];
       sortSel.innerHTML += `<option value="${f}::desc">${f} (desc.)</option>`;
       sortSel.innerHTML += `<option value="${f}::asc">${f} (asc.)</option>`;          
     }
   });
+  if (sortMappedFields) {
+    sortContainer.classList.remove('hidden');
+  } else {
+    sortContainer.classList.add('hidden');
+  }
+  
 
   document.getElementById("searchInput").addEventListener("input", debounce(filterAndDisplay, 300));
   filterKeys.forEach(fk => {
