@@ -1,3 +1,46 @@
+// Navigation Module
+function navigateToScreen(screenId) {    
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(screen => screen.classList.add('hidden'));
+    
+    const targetScreen = document.getElementById(screenId);
+    targetScreen.classList.remove('hidden');    
+}
+
+function show(element) {
+  if (element) {
+    element.classList.remove('hidden');
+  }
+}
+
+function hide(element) {
+  if (element) {
+    element.classList.add('hidden');
+  }
+}
+
+// DOM elements
+const domElements = {
+  mainScreen: {
+    screen: () => document.getElementById("mainScreen"),
+    mappingControls: () => document.getElementById("mappingControls"),
+    btnApplyConfiguration: () => document.getElementById("btnApplyConfiguration")
+    
+  },
+  itemViewScreen: {
+    screen: () => document.getElementById("itemViewScreen"),
+    backButton: () => document.querySelector("#itemViewScreen .back-button")
+  }
+};
+
+// Event listeners
+domElements.itemViewScreen.backButton().addEventListener("click", () => {
+  navigateToScreen("mainScreen");
+});
+domElements.mainScreen.btnApplyConfiguration().addEventListener("click", () => {
+  applyConfiguration();
+});
+
 class FileManager {
   constructor() {
     this.fileInput = document.getElementById("fileInput");
@@ -53,8 +96,8 @@ class FileManager {
           }
           
           // Store selected fields if they exist
-          if (data.view_config.display_fields) {
-            selectedFields = [...data.view_config.display_fields];
+          if (data.view_config.list_view_fields) {
+            selectedFields = [...data.view_config.list_view_fields];
           }
         }
       } else if (Array.isArray(data)) {
@@ -78,7 +121,8 @@ class FileManager {
       alert(`Error processing file: ${error.message}`);
     } finally {
       this.hideLoading();
-      document.getElementById("itemViewSection").classList.add('hidden');
+      //domElements.itemViewScreen.screen.classList.add('hidden');
+      hide(domElements.itemViewScreen.screen());
     }
   }
 
@@ -418,14 +462,10 @@ function viewItem(item) {
       
       const valueDiv = document.createElement('div');
       valueDiv.className = 'field-value';
-      valueDiv.textContent = value;
-      
-      const separator = document.createElement('div');
-      separator.className = 'field-separator';
+      valueDiv.textContent = value;      
       
       fieldGroup.appendChild(label);
       fieldGroup.appendChild(valueDiv);
-      fieldGroup.appendChild(separator);
       content.appendChild(fieldGroup);
     }
   });

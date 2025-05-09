@@ -188,3 +188,16 @@ details summary {
   align-items: center;
   gap: 1rem;
 }
+
+.field-group {
+  /*margin-bottom: 10px;*/
+  border-bottom: 1px dashed #333333;
+  padding: 20px 0;
+}
+
+.field-label {
+  font-style: italic;
+  color: gray;
+  margin-bottom: 8px;
+}
+

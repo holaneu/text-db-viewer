@@ -31,7 +31,7 @@
             <div class="hr"></div>
             <label>Fields visibility (item list):</label>
             <div id="displayFieldSelector"></div>
-            <button onclick="applyConfiguration()">Apply Configuration</button>
+            <button id="btnApplyConfiguration">Apply Configuration</button>
           </details>
         </div>
         
@@ -53,11 +53,12 @@
 
       <div id="itemViewScreen" class="screen hidden">
         <div class="screen-header">
-          <button class="back-button" onclick="navigation.goToMain()">&larr; Back</button>
+          <button class="back-button" >&larr; Back</button>
           <h2 id="itemViewTitle"></h2>
         </div>
         <div id="itemViewContent" class="item-view-content"></div>
       </div>
+
     </div>
   </main>
 
