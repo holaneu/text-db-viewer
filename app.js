@@ -166,8 +166,11 @@ function renderConfigUI() {
     
     const select = document.createElement("select");
     select.id = `map_${role}`;
-    select.innerHTML = `<option value="not used">${labels.notUsed}</option>` + 
+    select.innerHTML = `<option value="">${labels.notUsed}</option>` + 
       allFields.map(f => `<option value="${f}">${f}</option>`).join('');
+    
+    // Set the initial value based on fieldMap
+    select.value = fieldMap[role] === labels.notUsed ? '' : fieldMap[role];
     
     row.appendChild(label);
     row.appendChild(select);
@@ -195,8 +198,8 @@ function renderConfigUI() {
 function updateMappingControls() {
   Object.entries(fieldMap).forEach(([role, field]) => {
     const select = document.getElementById(`map_${role}`);
-    if (select && field !== 'not used') {
-      select.value = field;
+    if (select) {
+      select.value = field === labels.notUsed ? '' : field;
     }
   });
 }
