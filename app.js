@@ -36,7 +36,7 @@ class FileManager {
 
       if (data.collections && typeof data.collections === "object") {
         const keys = Object.keys(data.collections);
-        const choice = keys.length === 1 ? keys[0] : prompt("Zadejte název kolekce:\n" + keys.join(", "));
+        const choice = keys.length === 1 ? keys[0] : prompt("Enter collection name:\n" + keys.join(", "));
         rawData = data.collections[choice] || [];
         
         if (data.view_config) {
@@ -61,7 +61,7 @@ class FileManager {
       } else if (Array.isArray(data)) {
         rawData = data;
       } else {
-        throw new Error("Neplatný formát souboru - očekáván JSON array nebo collections objekt");
+        throw new Error("Invalid file format - expected JSON array or collections object");
       }
 
       extractAllFields();
@@ -75,7 +75,7 @@ class FileManager {
       details.open = true;
     } catch (error) {
       console.error("File processing error:", error);
-      alert(`Chyba při zpracování souboru: ${error.message}`);
+      alert(`Error processing file: ${error.message}`);
     } finally {
       this.hideLoading();
     }
@@ -86,7 +86,7 @@ class FileManager {
       const reader = new FileReader();
       
       reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Chyba při čtení souboru"));
+      reader.onerror = () => reject(new Error("Error reading file"));
       
       // Handle mobile Safari specifically
       reader.onprogress = (event) => {
@@ -103,7 +103,7 @@ class FileManager {
     try {
       return JSON.parse(text);
     } catch (error) {
-      throw new Error("Neplatný JSON formát");
+      throw new Error("Invalid JSON format");
     }
   }
 }
