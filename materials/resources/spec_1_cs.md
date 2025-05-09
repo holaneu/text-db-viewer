@@ -20,7 +20,8 @@ Jednoduchá webová aplikace pro nahrání a interaktivní prohlížení struktu
   - Využití **CSS tříd pro UI komponenty**, které usnadní opětovné použití v jiných projektech
 - **Platforma:**  
   - Klientská webová aplikace, fungující bez serveru
-
+- **Jazyk:**
+  - V kodu musi byt vsechny texty napsany v anglictine (nazvy promennych, funkci, souboru, komentaru a podobne, take vsechny texty a popisky v uzivatelskem rozhrani), bez ohledu na jazyk v kterem je napsana specifikace.
 ---
 
 ## **Uživatelské scénáře a funkcionalita**
@@ -41,9 +42,18 @@ Po načtení dat následuje krok konfigurace polí:
   - **Dropdowny** pro mapování polí k ovládacím prvkům:
     - `Search`, `Filter1`, `Filter2`, `Filter3`, `Sort1`, `Sort2`
     - Každý dropdown obsahuje:
-      - `not used` jako výchozí hodnotu
+      - `- not used -` jako výchozí hodnotu
       - Seznam všech unikátních polí z dat (včetně vnořených, ve formátu `field1.field2`)
   - **Multi-select** checkbox pro výběr, které pole se mají zobrazovat na kartě každé položky
+- **Správa konfigurace zobrazení (view_config):**
+  - Možnost uložení aktuální konfigurace zobrazení
+  - Načtení dříve uložené konfigurace
+  - Při načtení konfigurace:
+    - Neexistující nebo nevalidní pole jsou automaticky nastavena na "- not used -"
+    - Prázdné výběry jsou explicitně nastaveny na "- not used -"
+  - Při aktualizaci ovládacích prvků:
+    - Pole označená jako "not used" a neexistující pole se zobrazují jako "- not used -"
+    - Validace a čištění konfigurace při každé změně dat
 
 ### 3. **Ovládací panel pro vyhledávání, filtrování a řazení**
 Umístěn v horní části aplikace.
@@ -96,14 +106,17 @@ Umístěn v horní části aplikace.
 ## **Předpoklady**
 - Aplikace běží pouze v prohlížeči
 - Uživatel si přináší vlastní JSON data
-- Nejsou ukládány žádné údaje do localStorage nebo na server
+- Konfigurace zobrazení může být uložena a načtena
+- Nejsou ukládány žádné údaje do localStorage nebo na server (kromě konfigurace zobrazení)
 
 ---
 
 ## **Možné rozšíření v budoucnu**
 - Možnost exportu filtrovaných výsledků jako JSON nebo CSV
-- Podpora bookmarků / konfigurace UI rozhraní
+- Podpora bookmarků
 - Lokální cache naposledy načteného souboru
+- Správa více konfigurací zobrazení
+- Export a import konfigurací zobrazení
 
 ---
 

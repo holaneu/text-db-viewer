@@ -43,12 +43,11 @@ class FileManager {
           // Reset fieldMap to defaults before applying new mappings
           fieldMap = { ...defaultFieldMap };
           
-          // Apply mappings if they exist
+          // Apply mappings if they exist, ensuring invalid fields are set to notUsed
           if (data.view_config.controls_mapping) {
-            // Only merge the fields that exist in the controls_mapping
             Object.entries(data.view_config.controls_mapping).forEach(([key, value]) => {
               if (key in fieldMap) {
-                fieldMap[key] = value;
+                fieldMap[key] = value || labels.notUsed;  // Handle empty values
               }
             });
           }
@@ -169,8 +168,9 @@ function renderConfigUI() {
     select.innerHTML = `<option value="">${labels.notUsed}</option>` + 
       allFields.map(f => `<option value="${f}">${f}</option>`).join('');
     
-    // Set the initial value based on fieldMap
-    select.value = fieldMap[role] === labels.notUsed ? '' : fieldMap[role];
+    // Set the initial value based on fieldMap, checking if field exists in allFields
+    const mappedField = fieldMap[role];
+    select.value = (mappedField === labels.notUsed || !allFields.includes(mappedField)) ? '' : mappedField;
     
     row.appendChild(label);
     row.appendChild(select);
@@ -199,7 +199,8 @@ function updateMappingControls() {
   Object.entries(fieldMap).forEach(([role, field]) => {
     const select = document.getElementById(`map_${role}`);
     if (select) {
-      select.value = field === labels.notUsed ? '' : field;
+      // Set empty value if field is notUsed or doesn't exist in allFields
+      select.value = (field === labels.notUsed || !allFields.includes(field)) ? '' : field;
     }
   });
 }
@@ -217,7 +218,9 @@ function applyConfiguration() {
   const keys = Object.keys(fieldMap);
   keys.forEach(k => {
     const sel = document.getElementById(`map_${k}`);
-    fieldMap[k] = sel.value;
+    const value = sel.value;
+    // Explicitly set notUsed for empty or invalid fields
+    fieldMap[k] = value && allFields.includes(value) ? value : labels.notUsed;
   });
 
   selectedFields = allFields.filter(f => {
@@ -239,25 +242,26 @@ function renderControls() {
   container.innerHTML = '';
   
   filterKeys.forEach(fk => {
-    // Only create filter control if field is mapped and exists in allFields
     const mappedField = fieldMap[fk];
-    if (mappedField && mappedField !== labels.notUsed && allFields.includes(mappedField)) {
-      const values = getUniqueValues(mappedField);
-      const div = document.createElement("div");
-      div.className = 'form-row';
-      
-      const label = document.createElement("label");
-      label.textContent = mappedField;
-      
-      const select = document.createElement("select");
-      select.id = `ctrl_${fk}`;
-      select.innerHTML = `<option value="">${labels.all}</option>` + 
-        values.map(v => `<option value="${v}">${v}</option>`).join('');
-      
-      div.appendChild(label);
-      div.appendChild(select);
-      container.appendChild(div);
+    // Skip if field is not used or doesn't exist in allFields
+    if (mappedField === labels.notUsed || !allFields.includes(mappedField)) {
+      return;
     }
+    const values = getUniqueValues(mappedField);
+    const div = document.createElement("div");
+    div.className = 'form-row';
+    
+    const label = document.createElement("label");
+    label.textContent = mappedField;
+    
+    const select = document.createElement("select");
+    select.id = `ctrl_${fk}`;
+    select.innerHTML = `<option value="">${labels.all}</option>` + 
+      values.map(v => `<option value="${v}">${v}</option>`).join('');
+    
+    div.appendChild(label);
+    div.appendChild(select);
+    container.appendChild(div);
   });
 
   const sortSel = document.getElementById("sortControl");
@@ -307,7 +311,7 @@ function filterAndDisplay() {
 
   ['filter1', 'filter2', 'filter3'].forEach(fk => {
     const field = fieldMap[fk];
-    if (field !== 'not used') {
+    if (field !== labels.notUsed && allFields.includes(field)) {
       const sel = document.getElementById(`ctrl_${fk}`);
       const val = sel?.value;
       if (val) {
