@@ -1,5 +1,3 @@
-
-
 class FileManager {
   constructor() {
     this.fileInput = document.getElementById("fileInput");
@@ -40,6 +38,26 @@ class FileManager {
         const keys = Object.keys(data.collections);
         const choice = keys.length === 1 ? keys[0] : prompt("Zadejte název kolekce:\n" + keys.join(", "));
         rawData = data.collections[choice] || [];
+        
+        if (data.view_config) {
+          // Reset fieldMap to defaults before applying new mappings
+          fieldMap = { ...defaultFieldMap };
+          
+          // Apply mappings if they exist
+          if (data.view_config.controls_mapping) {
+            // Only merge the fields that exist in the controls_mapping
+            Object.entries(data.view_config.controls_mapping).forEach(([key, value]) => {
+              if (key in fieldMap) {
+                fieldMap[key] = value;
+              }
+            });
+          }
+          
+          // Store selected fields if they exist
+          if (data.view_config.display_fields) {
+            selectedFields = [...data.view_config.display_fields];
+          }
+        }
       } else if (Array.isArray(data)) {
         rawData = data;
       } else {
@@ -48,6 +66,8 @@ class FileManager {
 
       extractAllFields();
       renderConfigUI();
+      updateMappingControls();  // Add this line
+      updateDisplayFieldsSelection();  // Add this line
       document.getElementById("configSection").classList.remove('hidden');
       document.getElementById("resultsSection").classList.add('hidden');
       document.getElementById("controlsSection").classList.add('hidden');      
@@ -95,11 +115,9 @@ const labels = {
   "notUsed" : '- not used -',
   "all" : "- all -",
 };
-let rawData = null;
-let activeItems = [];
-let allFields = [];
-let selectedFields = [];
-let fieldMap = {
+
+// Modify the fieldMap initialization
+const defaultFieldMap = {
   search: labels.notUsed,
   filter1: labels.notUsed,
   filter2: labels.notUsed,
@@ -107,6 +125,13 @@ let fieldMap = {
   sort1: labels.notUsed,
   sort2: labels.notUsed
 };
+
+let fieldMap = { ...defaultFieldMap };
+
+let rawData = null;
+let activeItems = [];
+let allFields = [];
+let selectedFields = [];
 
 function extractAllFields() {
   const fieldSet = new Set();
@@ -167,6 +192,24 @@ function renderConfigUI() {
   });
 }
 
+function updateMappingControls() {
+  Object.entries(fieldMap).forEach(([role, field]) => {
+    const select = document.getElementById(`map_${role}`);
+    if (select && field !== 'not used') {
+      select.value = field;
+    }
+  });
+}
+
+function updateDisplayFieldsSelection() {
+  selectedFields.forEach(field => {
+    const checkbox = document.getElementById(`chk_${field}`);
+    if (checkbox) {
+      checkbox.checked = true;
+    }
+  });
+}
+
 function applyConfiguration() {
   const keys = Object.keys(fieldMap);
   keys.forEach(k => {
@@ -193,13 +236,15 @@ function renderControls() {
   container.innerHTML = '';
   
   filterKeys.forEach(fk => {
-    if (fieldMap[fk] !== 'not used') {
-      const values = getUniqueValues(fieldMap[fk]);
+    // Only create filter control if field is mapped and exists in allFields
+    const mappedField = fieldMap[fk];
+    if (mappedField && mappedField !== labels.notUsed && allFields.includes(mappedField)) {
+      const values = getUniqueValues(mappedField);
       const div = document.createElement("div");
       div.className = 'form-row';
       
       const label = document.createElement("label");
-      label.textContent = fieldMap[fk];
+      label.textContent = mappedField;
       
       const select = document.createElement("select");
       select.id = `ctrl_${fk}`;
@@ -216,16 +261,16 @@ function renderControls() {
   const sortContainer = document.getElementById("sortContainer");
   sortSel.innerHTML = '';
   let sortMappedFields = false;
-  console.log('sortMappedFields', sortMappedFields);
+  
   ['sort1', 'sort2'].forEach(k => {
-    if (fieldMap[k] !== 'not used') {
+    const mappedField = fieldMap[k];
+    if (mappedField && mappedField !== labels.notUsed && allFields.includes(mappedField)) {
       sortMappedFields = true;
-      console.log('sortMappedFields', sortMappedFields);
-      const f = fieldMap[k];
-      sortSel.innerHTML += `<option value="${f}::desc">${f} (desc.)</option>`;
-      sortSel.innerHTML += `<option value="${f}::asc">${f} (asc.)</option>`;          
+      sortSel.innerHTML += `<option value="${mappedField}::desc">${mappedField} (desc.)</option>`;
+      sortSel.innerHTML += `<option value="${mappedField}::asc">${mappedField} (asc.)</option>`;          
     }
   });
+
   if (sortMappedFields) {
     sortContainer.classList.remove('hidden');
   } else {
