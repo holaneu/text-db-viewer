@@ -36,14 +36,17 @@
         </div>
         
         <div id="controlsSection" class="section hidden">
-          <input type="text" id="searchInput" placeholder="Search..." />
-          <div class="flex-columns" id="filterControls"></div>
-          <div id="sortContainer" class="hidden">
-            <div class="form-row" >
-              <label>Sort by:</label>
-              <select id="sortControl"></select>
+          <details>
+            <summary>Search, Filter, Sort</summary>
+            <input type="text" id="searchInput" placeholder="Search..." />
+            <div class="flex-columns" id="filterControls"></div>
+            <div id="sortContainer" class="hidden">
+              <div class="form-row" >
+                <label>Sort by:</label>
+                <select id="sortControl"></select>
+              </div>
             </div>
-          </div>
+          </details>          
         </div>
         
         <div id="resultsSection" class="hidden">
