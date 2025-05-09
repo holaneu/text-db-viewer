@@ -8,41 +8,56 @@
 </head>
 <body>
   <header>
-    <h1>Database Viewer</h1>
-    <div class="file-input-wrapper">
-      <input type="file" id="fileInput" accept=".json" />
-    </div>
-    <div id="loadingIndicator" class="loading-indicator">Loading file...</div>
+    <h1>Database Viewer</h1>    
   </header>
 
   <main>
-    <div id="configSection" class="section hidden">
-      <details>
-        <summary>Display Settings</summary>
-        <label>Controls mapping:</label>
-        <div id="mappingControls" class="flex-columns"></div>
-        <div class="hr"></div>
-        <label>Fields visibility (item list):</label>
-        <div id="displayFieldSelector"></div>
-        <button onclick="applyConfiguration()">Apply Configuration</button>
-      </details>
-    </div>
+    <div id="app">
 
-    <div id="controlsSection" class="section hidden">
-      <input type="text" id="searchInput" placeholder="Search..." />
-      <div class="flex-columns" id="filterControls"></div>
-      <div id="sortContainer" class="hidden">
-        <div class="form-row" >
-          <label>Sort by:</label>
-          <select id="sortControl"></select>
+      <div id="mainScreen" class="screen">
+
+        <div id="fileSection">
+          <div class="file-input-wrapper">
+            <input type="file" id="fileInput" accept=".json" />
+          </div>
+          <div id="loadingIndicator" class="loading-indicator">Loading file...</div>
+        </div>
+        
+        <div id="configSection" class="section hidden">
+          <details>
+            <summary>Display Settings</summary>
+            <label>Controls mapping:</label>
+            <div id="mappingControls" class="flex-columns"></div>
+            <div class="hr"></div>
+            <label>Fields visibility (item list):</label>
+            <div id="displayFieldSelector"></div>
+            <button onclick="applyConfiguration()">Apply Configuration</button>
+          </details>
+        </div>
+        
+        <div id="controlsSection" class="section hidden">
+          <input type="text" id="searchInput" placeholder="Search..." />
+          <div class="flex-columns" id="filterControls"></div>
+          <div id="sortContainer" class="hidden">
+            <div class="form-row" >
+              <label>Sort by:</label>
+              <select id="sortControl"></select>
+            </div>
+          </div>
+        </div>
+        
+        <div id="resultsSection" class="hidden">
+          <div id="results"></div>
         </div>
       </div>
-      
-      
-    </div>
 
-    <div id="resultsSection" class="section hidden">
-      <div id="results"></div>
+      <div id="itemViewScreen" class="screen hidden">
+        <div class="screen-header">
+          <button class="back-button" onclick="navigation.goToMain()">&larr; Back</button>
+          <h2 id="itemViewTitle"></h2>
+        </div>
+        <div id="itemViewContent" class="item-view-content"></div>
+      </div>
     </div>
   </main>
 

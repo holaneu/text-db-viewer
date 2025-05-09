@@ -72,11 +72,13 @@ class FileManager {
       document.getElementById("controlsSection").classList.add('hidden');      
       const details = document.querySelector('#configSection details');
       details.open = true;
+      navigation.goToMain();
     } catch (error) {
       console.error("File processing error:", error);
       alert(`Error processing file: ${error.message}`);
     } finally {
       this.hideLoading();
+      document.getElementById("itemViewSection").classList.add('hidden');
     }
   }
 
@@ -365,8 +367,70 @@ function renderResults(items) {
       p.textContent = `${f}: ${val}`;
       div.appendChild(p);
     });
+    // Add click handler to view item details
+    div.addEventListener('click', () => viewItem(item));
     container.appendChild(div);
   });
+}
+
+// Add navigation controller
+const navigation = {
+  screens: {
+    main: document.getElementById('mainScreen'),
+    itemView: document.getElementById('itemViewScreen')
+  },
+
+  showScreen(screenId) {
+    Object.values(this.screens).forEach(screen => {
+      screen.classList.add('hidden');
+    });
+    this.screens[screenId].classList.remove('hidden');
+  },
+
+  goToMain() {
+    this.showScreen('main');
+  },
+
+  goToItemView() {
+    this.showScreen('itemView');
+  }
+};
+
+// Update viewItem function
+function viewItem(item) {
+  const content = document.getElementById('itemViewContent');
+  const title = document.getElementById('itemViewTitle');
+  
+  content.innerHTML = '';
+  
+  const titleField = selectedFields[0];
+  title.textContent = getByPath(item, titleField) || 'Item Details';
+  
+  allFields.forEach(field => {
+    const value = getByPath(item, field);
+    if (value !== undefined) {
+      const fieldGroup = document.createElement('div');
+      fieldGroup.className = 'field-group';
+      
+      const label = document.createElement('div');
+      label.className = 'field-label';
+      label.textContent = field;
+      
+      const valueDiv = document.createElement('div');
+      valueDiv.className = 'field-value';
+      valueDiv.textContent = value;
+      
+      const separator = document.createElement('div');
+      separator.className = 'field-separator';
+      
+      fieldGroup.appendChild(label);
+      fieldGroup.appendChild(valueDiv);
+      fieldGroup.appendChild(separator);
+      content.appendChild(fieldGroup);
+    }
+  });
+  
+  navigation.goToItemView();
 }
 
 function debounce(fn, delay) {
