@@ -201,3 +201,25 @@ details summary {
   margin-bottom: 8px;
 }
 
+/* Update display field selector style */
+.field-selector-section {
+  margin: 1rem 0;
+}
+
+.field-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.field-selector-grid > div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.field-selector-grid input[type="checkbox"] {
+  margin: 0;
+}
+

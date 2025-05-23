@@ -104,8 +104,13 @@ class FileManager {
           }
           
           // Store selected fields if they exist
-          if (data.configs.views.list_view) {
-            selectedFields = [...data.configs.views.list_view];
+          if (data.configs.views) {
+            if (data.configs.views.list_view) {
+              selectedFields = [...data.configs.views.list_view];
+            }
+            if (data.configs.views.detail_view) {
+              selectedDetailFields = [...data.configs.views.detail_view];
+            }
           }
         }
       } else if (Array.isArray(data)) {
@@ -185,6 +190,7 @@ let rawData = null;
 let activeItems = [];
 let allFields = [];
 let selectedFields = [];
+let selectedDetailFields = []; // Add after existing variables
 
 function extractAllFields() {
   const fieldSet = new Set();
@@ -231,22 +237,29 @@ function renderConfigUI() {
     container.appendChild(row);
   });
 
-  // Update display field selector layout
-  const displayFieldSelector = dom.mainScreen.displayFieldSelector();
+  // Create field selectors for both list and detail views
+  createFieldSelector(dom.mainScreen.displayFieldSelector(), selectedFields);
+  createFieldSelector(document.getElementById('displayFieldSelectorDetailView'), selectedDetailFields);
+}
 
-  displayFieldSelector.innerHTML = '';
-  allFields.forEach(f => {
-    const div = document.createElement("div");
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.value = f;
-    checkbox.id = `chk_${f}`;
-    const label = document.createElement("label");
-    label.htmlFor = `chk_${f}`;
-    label.textContent = f;
-    div.appendChild(checkbox);
-    div.appendChild(label);
-    displayFieldSelector.appendChild(div);
+// Update updateDisplayFieldsSelection function
+function updateDisplayFieldsSelection() {
+  // Update list view checkboxes
+  const listContainer = dom.mainScreen.displayFieldSelector();
+  selectedFields.forEach(field => {
+    const checkbox = document.getElementById(`chk_${listContainer.id}_${field}`);
+    if (checkbox) {
+      checkbox.checked = true;
+    }
+  });
+
+  // Update detail view checkboxes
+  const detailContainer = document.getElementById('displayFieldSelectorDetailView');
+  selectedDetailFields.forEach(field => {
+    const checkbox = document.getElementById(`chk_${detailContainer.id}_${field}`);
+    if (checkbox) {
+      checkbox.checked = true;
+    }
   });
 }
 
@@ -260,12 +273,23 @@ function updateMappingControls() {
   });
 }
 
-function updateDisplayFieldsSelection() {
-  selectedFields.forEach(field => {
-    const checkbox = document.getElementById(`chk_${field}`);
-    if (checkbox) {
-      checkbox.checked = true;
-    }
+function createFieldSelector(container, selectedItems) {
+  container.innerHTML = '';
+  allFields.forEach(f => {
+    const div = document.createElement("div");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = f;
+    checkbox.id = `chk_${container.id}_${f}`;
+    checkbox.checked = selectedItems.includes(f);
+    
+    const label = document.createElement("label");
+    label.htmlFor = checkbox.id;
+    label.textContent = f;
+    
+    div.appendChild(checkbox);
+    div.appendChild(label);
+    container.appendChild(div);
   });
 }
 
@@ -274,14 +298,25 @@ function applyConfiguration() {
   keys.forEach(k => {
     const sel = document.getElementById(`map_${k}`);
     const value = sel.value;
-    // Explicitly set notUsed for empty or invalid fields
     fieldMap[k] = value && allFields.includes(value) ? value : labels.notUsed;
   });
 
-  selectedFields = allFields.filter(f => {
-    const chk = document.getElementById(`chk_${f}`);
-    return chk.checked;
-  });
+  // Get selected fields for both views
+  const listContainer = dom.mainScreen.displayFieldSelector();
+  const detailContainer = document.getElementById('displayFieldSelectorDetailView');
+  
+  selectedFields = getSelectedFields(listContainer);
+  selectedDetailFields = getSelectedFields(detailContainer);
+
+  // If no fields selected for detail view, use all fields
+  if (selectedDetailFields.length === 0) {
+    selectedDetailFields = [...allFields];
+  }
+
+  // If no fields selected for list view, use first field
+  if (selectedFields.length === 0) {
+    selectedFields = allFields.length ? [allFields[0]] : [];
+  }
 
   renderControls();
   document.getElementById("controlsSection").classList.remove('hidden');
@@ -289,6 +324,28 @@ function applyConfiguration() {
   filterAndDisplay();
   const details = document.querySelector('#configSection details');
   details.open = false;
+}
+
+function getSelectedFields(container) {
+  return allFields.filter(f => {
+    const chk = document.getElementById(`chk_${container.id}_${f}`);
+    return chk?.checked;
+  });
+}
+
+// Update getSelectedFields function to maintain order
+function getSelectedFields(container) {
+  // Get all checkboxes in order of appearance
+  const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+  const selectedFields = [];
+  
+  checkboxes.forEach(chk => {
+    if (chk.checked) {
+      selectedFields.push(chk.value);
+    }
+  });
+  
+  return selectedFields;
 }
 
 function renderControls() {
@@ -432,11 +489,10 @@ function viewItem(item) {
   const title = document.getElementById('itemViewTitle');
   
   content.innerHTML = '';
+  title.textContent = ''; // Clear the title, leaving only back button
   
-  const titleField = selectedFields[0];
-  title.textContent = getByPath(item, titleField) || 'Item Details';
-  
-  allFields.forEach(field => {
+  // Use selectedDetailFields directly, maintaining the exact order from config
+  selectedDetailFields.forEach(field => {
     const value = getByPath(item, field);
     if (value !== undefined) {
       const fieldGroup = document.createElement('div');
@@ -456,7 +512,7 @@ function viewItem(item) {
     }
   });
   
-navigation.showScreen('itemView');
+  navigation.showScreen('itemView');
 }
 
 function debounce(fn, delay) {

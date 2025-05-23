@@ -21,11 +21,8 @@
       ],
       "detail_view": [
         "title",
-        "description",
-        "author",
         "publishedAt",
-        "content",
-        "url"
+        "content"
       ]
     },
     "forms": {
