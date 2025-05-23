@@ -435,23 +435,31 @@ function renderControls() {
   const sortSel = document.getElementById("sortControl");
   const sortContainer = document.getElementById("sortContainer");
   sortSel.innerHTML = '';
-  let sortMappedFields = false;
+  let hasUserSortOptions = false;
   
+  // Add mapped field sort options
   ['sort1', 'sort2'].forEach(k => {
     const mappedField = fieldMap[k];
     if (mappedField && mappedField !== labels.notUsed && allFields.includes(mappedField)) {
-      sortMappedFields = true;
+      hasUserSortOptions = true;
       sortSel.innerHTML += `<option value="${mappedField}::desc">${mappedField} (desc.)</option>`;
       sortSel.innerHTML += `<option value="${mappedField}::asc">${mappedField} (asc.)</option>`;          
     }
   });
 
-  if (sortMappedFields) {
-    sortContainer.classList.remove('hidden');
-  } else {
-    sortContainer.classList.add('hidden');
+  // Add divider if there are user sort options
+  if (hasUserSortOptions) {
+    sortSel.innerHTML += '<option disabled>──────────</option>';
   }
-  
+
+  // Add preset sort options
+  sortSel.innerHTML += `
+    <option value="__original::asc">original order (asc.)</option>
+    <option value="__original::desc">original order (desc.)</option>
+    <option value="__random::none">random</option>
+  `;
+
+  sortContainer.classList.remove('hidden'); // Always show sort container
 
   document.getElementById("searchInput").addEventListener("input", debounce(filterAndDisplay, 300));
   filterKeys.forEach(fk => {
@@ -501,13 +509,33 @@ function filterAndDisplay() {
   const sortVal = sortSel.value;
   if (sortVal) {
     const [f, dir] = sortVal.split("::");
-    filtered.sort((a, b) => {
-      const va = normalizeValue(getByPath(a, f));
-      const vb = normalizeValue(getByPath(b, f));
-      if (va < vb) return dir === 'asc' ? -1 : 1;
-      if (va > vb) return dir === 'asc' ? 1 : -1;
-      return 0;
-    });
+    
+    // Handle preset sort options
+    if (f === '__original') {
+      // Use item's position in original data
+      filtered.sort((a, b) => {
+        const idxA = rawData.indexOf(a);
+        const idxB = rawData.indexOf(b);
+        return dir === 'asc' ? idxA - idxB : idxB - idxA;
+      });
+    } 
+    else if (f === '__random') {
+      // Fisher-Yates shuffle
+      for (let i = filtered.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+      }
+    }
+    else {
+      // Normal field-based sorting
+      filtered.sort((a, b) => {
+        const va = normalizeValue(getByPath(a, f));
+        const vb = normalizeValue(getByPath(b, f));
+        if (va < vb) return dir === 'asc' ? -1 : 1;
+        if (va > vb) return dir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
   }
 
   renderResults(filtered);
