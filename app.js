@@ -1,11 +1,14 @@
 // Navigation Module
-function navigateToScreen(screenId) {    
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => screen.classList.add('hidden'));
-    
-    const targetScreen = document.getElementById(screenId);
-    targetScreen.classList.remove('hidden');    
-}
+
+// navigation controller
+const navigation = {
+  showScreen(screenId) {
+    Object.values(dom.screens).forEach(screen => {
+      screen.classList.add('hidden');
+    });
+    dom.screens[screenId].classList.remove('hidden');
+  }
+};
 
 function show(element) {
   if (element) {
@@ -20,12 +23,16 @@ function hide(element) {
 }
 
 // DOM elements
-const domElements = {
+const dom = {
+  screens: {
+    main: document.getElementById('mainScreen'),
+    itemView: document.getElementById('itemViewScreen')
+  },
   mainScreen: {
     screen: () => document.getElementById("mainScreen"),
     mappingControls: () => document.getElementById("mappingControls"),
-    btnApplyConfiguration: () => document.getElementById("btnApplyConfiguration")
-    
+    btnApplyConfiguration: () => document.getElementById("btnApplyConfiguration"),
+    results: document.getElementById("results")
   },
   itemViewScreen: {
     screen: () => document.getElementById("itemViewScreen"),
@@ -34,10 +41,10 @@ const domElements = {
 };
 
 // Event listeners
-domElements.itemViewScreen.backButton().addEventListener("click", () => {
-  navigateToScreen("mainScreen");
+dom.itemViewScreen.backButton().addEventListener("click", () => {
+  navigation.showScreen("main");
 });
-domElements.mainScreen.btnApplyConfiguration().addEventListener("click", () => {
+dom.mainScreen.btnApplyConfiguration().addEventListener("click", () => {
   applyConfiguration();
 });
 
@@ -82,13 +89,13 @@ class FileManager {
         const choice = keys.length === 1 ? keys[0] : prompt("Enter collection name:\n" + keys.join(", "));
         rawData = data.collections[choice] || [];
         
-        if (data.view_config) {
+        if (data.configs) {
           // Reset fieldMap to defaults before applying new mappings
           fieldMap = { ...defaultFieldMap };
           
           // Apply mappings if they exist, ensuring invalid fields are set to notUsed
-          if (data.view_config.controls_mapping) {
-            Object.entries(data.view_config.controls_mapping).forEach(([key, value]) => {
+          if (data.configs.controls_mapping) {
+            Object.entries(data.configs.controls_mapping).forEach(([key, value]) => {
               if (key in fieldMap) {
                 fieldMap[key] = value || labels.notUsed;  // Handle empty values
               }
@@ -96,8 +103,8 @@ class FileManager {
           }
           
           // Store selected fields if they exist
-          if (data.view_config.list_view_fields) {
-            selectedFields = [...data.view_config.list_view_fields];
+          if (data.configs.views.list_view) {
+            selectedFields = [...data.configs.views.list_view];
           }
         }
       } else if (Array.isArray(data)) {
@@ -113,16 +120,16 @@ class FileManager {
       document.getElementById("configSection").classList.remove('hidden');
       document.getElementById("resultsSection").classList.add('hidden');
       document.getElementById("controlsSection").classList.add('hidden');      
-      const details = document.querySelector('#configSection details');
-      details.open = true;
-      navigation.goToMain();
+      const configSectionCollapsable = document.querySelector('#configSection details');
+      configSectionCollapsable.open = true;
+      navigation.showScreen("main");
     } catch (error) {
       console.error("File processing error:", error);
       alert(`Error processing file: ${error.message}`);
     } finally {
       this.hideLoading();
       //domElements.itemViewScreen.screen.classList.add('hidden');
-      hide(domElements.itemViewScreen.screen());
+      hide(dom.itemViewScreen.screen());
     }
   }
 
@@ -417,29 +424,6 @@ function renderResults(items) {
   });
 }
 
-// Add navigation controller
-const navigation = {
-  screens: {
-    main: document.getElementById('mainScreen'),
-    itemView: document.getElementById('itemViewScreen')
-  },
-
-  showScreen(screenId) {
-    Object.values(this.screens).forEach(screen => {
-      screen.classList.add('hidden');
-    });
-    this.screens[screenId].classList.remove('hidden');
-  },
-
-  goToMain() {
-    this.showScreen('main');
-  },
-
-  goToItemView() {
-    this.showScreen('itemView');
-  }
-};
-
 // Update viewItem function
 function viewItem(item) {
   const content = document.getElementById('itemViewContent');
@@ -470,7 +454,7 @@ function viewItem(item) {
     }
   });
   
-  navigation.goToItemView();
+navigation.showScreen('itemView');
 }
 
 function debounce(fn, delay) {
