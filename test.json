@@ -1,0 +1,129 @@
+{
+  "metadata": {
+    "id": "MF8mFhoxfM",
+    "title": "news",
+    "description": "",
+    "created_at": "2025-04-16T12:40:34.267478+00:00",
+    "updated_at": "2025-04-23T13:09:17.814803+00:00"
+  },
+  "configs": {
+    "controls_mapping": {
+      "search": "title",
+      "filter1": "source.name",
+      "filter2": "someFakeField1",
+      "sort1": "publishedAt",
+      "sort2": "someFakeField2"
+    },
+    "views": {
+      "list_view": [
+        "title",
+        "author"
+      ],
+      "detail_view": [
+        "title",
+        "description",
+        "author",
+        "publishedAt",
+        "content",
+        "url"
+      ]
+    },
+    "forms": {
+      "add_item": [
+        "title",
+        "description",
+        "author",
+        "content",
+        "url"
+      ]
+    }    
+  },
+  "collections": {
+    "entries": [
+      {
+        "source": {
+          "id": "techcrunch",
+          "name": "TechCrunch"
+        },
+        "author": "Kyle Wiggers",
+        "title": "ChatGPT search is growing quickly in Europe, OpenAI data suggests | TechCrunch",
+        "description": "ChatGPT search is growing quickly in Europe, according to data reported by OpenAI to comply with the EU's Digital Services Act.",
+        "url": "https://techcrunch.com/2025/04/21/chatgpt-search-is-growing-quickly-in-europe-openai-data-suggests/",
+        "urlToImage": "https://techcrunch.com/wp-content/uploads/2025/02/GettyImages-2195918462.jpg?w=1024",
+        "publishedAt": "2025-04-21T19:23:58Z",
+        "content": "ChatGPT search, OpenAI’s feature within ChatGPT that allows the chatbot to access and incorporate up-to-date information from the web into its responses, is growing at a fast clip in Europe.\r\nA repor… [+2478 chars]",
+        "id": "qTIl1Ntj8I"
+      },
+      {
+        "source": {
+          "id": "techcrunch",
+          "name": "TechCrunch"
+        },
+        "author": "Marina Temkin",
+        "title": "OpenAI pursued Cursor maker before entering into talks to buy Windsurf for $3B | TechCrunch",
+        "description": "When news broke that OpenAI was in talks to acquire AI coding company Windsurf for $3 billion, one of the first questions on the mind of anyone following",
+        "url": "https://techcrunch.com/2025/04/17/openai-pursued-cursor-maker-before-entering-into-talks-to-buy-windsurf-for-3b/",
+        "urlToImage": "https://techcrunch.com/wp-content/uploads/2025/01/GettyImages-2170386424.jpg?w=1024",
+        "publishedAt": "2025-04-18T03:03:52Z",
+        "content": "When news broke that OpenAI was in talks to acquire AI coding company Windsurf for $3 billion, one of the first questions on the mind of anyone following the space was likely: Why not buy Cursor crea… [+1130 chars]",
+        "id": "gdRqGPGs5c"
+      },
+      {
+        "source": {
+          "id": "techcrunch",
+          "name": "TechCrunch"
+        },
+        "author": "Anthony Ha",
+        "title": "Your politeness could be costly for OpenAI | TechCrunch",
+        "description": "“I wonder how much money OpenAI has lost in electricity costs from people saying ‘please’ and ‘thank you’ to their models.” It was a seemingly random",
+        "url": "https://techcrunch.com/2025/04/20/your-politeness-could-be-costly-for-openai/",
+        "urlToImage": "https://techcrunch.com/wp-content/uploads/2025/02/GettyImages-2198379368.jpg?resize=1200,800",
+        "publishedAt": "2025-04-20T17:13:46Z",
+        "content": "I wonder how much money OpenAI has lost in electricity costs from people saying please and thank you to their models.\r\nIt was a seemingly random question posed by a user on X (formerly Twitter), but … [+800 chars]",
+        "id": "pO1MhDYuoE"
+      },
+      {
+        "source": {
+          "id": "techcrunch",
+          "name": "TechCrunch"
+        },
+        "author": "Anthony Ha",
+        "title": "OpenAI co-founder Ilya Sutskever’s Safe Superintelligence reportedly valued at $32B | TechCrunch",
+        "description": "Safe Superintelligence (SSI), the AI startup led by OpenAI’s co-founder and former chief scientist Ilya Sutskever, has raised an additional $2 billion in",
+        "url": "https://techcrunch.com/2025/04/12/openai-co-founder-ilya-sutskevers-safe-superintelligence-reportedly-valued-at-32b/",
+        "urlToImage": "https://techcrunch.com/wp-content/uploads/2024/06/019A7E29-3482-4F68-9A29-624BA22F0334.jpeg?w=1080",
+        "publishedAt": "2025-04-12T19:40:41Z",
+        "content": "Safe Superintelligence (SSI), the AI startup led by OpenAIs co-founder and former chief scientist Ilya Sutskever, has raised an additional $2 billion in funding at a $32 billion valuation, according … [+601 chars]",
+        "id": "Z6MEZsjbqk"
+      },
+      {
+        "source": {
+          "id": "techcrunch",
+          "name": "TechCrunch"
+        },
+        "author": "Kyle Wiggers",
+        "title": "OpenAI is winding down its GPT-4 AI model in ChatGPT | TechCrunch",
+        "description": "OpenAI will soon retire GPT-4, an AI model it launched over two years ago, from ChatGPT, the company announced in a changelog.",
+        "url": "https://techcrunch.com/2025/04/11/openai-is-winding-down-its-gpt-4-ai-model-in-chatgpt/",
+        "urlToImage": "https://techcrunch.com/wp-content/uploads/2025/02/GettyImages-2195918462.jpg?w=1024",
+        "publishedAt": "2025-04-11T14:04:24Z",
+        "content": "OpenAI will soon retire GPT-4, an AI model it launched over two years ago, from ChatGPT, according to a changelog posted on Thursday.\r\nEffective April 30, GPT-4 will be “fully replaced” by GPT-4o, th… [+1433 chars]",
+        "id": "5voEc5nByN"
+      },
+      {
+        "source": {
+          "id": "the-next-web",
+          "name": "The Next Web"
+        },
+        "author": "Thomas Macaulay",
+        "title": "Europe boosts military AI as Mistral and Helsing form defence tech alliance",
+        "description": "European tech leaders Helsing and Mistral have formed a pact to build new military AI systems. The partnership brings together two of Europe’s top startups. Helsing, a defence tech firm based in Germany, was valued at €5bn last year. Founded in 2021, the comp…",
+        "url": "https://thenextweb.com/news/mistral-helsing-form-european-defence-tech-military-ai-alliance",
+        "urlToImage": "https://img-cdn.tnwcdn.com/image/tnw-blurple?filter_last=1&fit=1280%2C640&url=https%3A%2F%2Fcdn0.tnwcdn.com%2Fwp-content%2Fblogs.dir%2F1%2Ffiles%2F2024%2F07%2FUntitled-design-1.jpeg&signature=ce419bf53431c11eeac7fb8f36728f34",
+        "publishedAt": "2025-02-10T11:08:50Z",
+        "content": "European tech leaders Helsing and Mistral have formed a pact to build new military AI systems.\r\nThe partnership brings together two of Europes top startups. Helsing, a defence tech firm based in Germ… [+2307 chars]",
+        "id": "5XD9Q178Wj"
+      }
+    ]
+  }
+}
