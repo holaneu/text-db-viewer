@@ -28,11 +28,6 @@
     },
     "forms": {
       "add_item": [
-        "title",
-        "description",
-        "author",
-        "content",
-        "url"
       ]
     }    
   },
