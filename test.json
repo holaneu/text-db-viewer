@@ -10,9 +10,10 @@
     "controls_mapping": {
       "search": "title",
       "filter1": "source.name",
-      "filter2": "someFakeField1",
+      "filter2": null,
+      "filter3": null,
       "sort1": "publishedAt",
-      "sort2": "someFakeField2"
+      "sort2": null
     },
     "views": {
       "list_view": [
