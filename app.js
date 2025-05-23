@@ -31,6 +31,7 @@ const dom = {
   mainScreen: {
     screen: () => document.getElementById("mainScreen"),
     mappingControls: () => document.getElementById("mappingControls"),
+    displayFieldSelector: () => document.getElementById("displayFieldSelector"),
     btnApplyConfiguration: () => document.getElementById("btnApplyConfiguration"),
     results: document.getElementById("results")
   },
@@ -206,7 +207,7 @@ function collectFields(obj, prefix, set) {
 
 function renderConfigUI() {
   const mapping = ['search', 'filter1', 'filter2', 'filter3', 'sort1', 'sort2'];
-  const container = document.getElementById("mappingControls");
+  const container = dom.mainScreen.mappingControls();
   container.innerHTML = '';
   
   mapping.forEach(role => {
@@ -231,7 +232,8 @@ function renderConfigUI() {
   });
 
   // Update display field selector layout
-  const displayFieldSelector = document.getElementById("displayFieldSelector");
+  const displayFieldSelector = dom.mainScreen.displayFieldSelector();
+
   displayFieldSelector.innerHTML = '';
   allFields.forEach(f => {
     const div = document.createElement("div");
