@@ -293,7 +293,7 @@ function updateMappingControls() {
 function createFieldSelector(container, selectedItems) {
   container.innerHTML = '';
   
-  // For detail view, maintain exact order from selectedDetailFields
+  // Use order-preserving logic for both detail and list views
   if (container.id === 'displayFieldSelectorDetailView') {
     // First render configured fields in their original order
     selectedDetailFields.forEach(f => {
@@ -308,10 +308,19 @@ function createFieldSelector(container, selectedItems) {
         createFieldCheckbox(container, f, false);
       }
     });
-  } else {
-    // For other selectors (list view), use sorted fields
+  } else if (container.id === 'displayFieldSelector') {
+    // For list view, maintain original order
+    selectedFields.forEach(f => {
+      if (allFields.includes(f)) {
+        createFieldCheckbox(container, f, true);
+      }
+    });
+    
+    // Then add remaining fields
     allFieldsSorted.forEach(f => {
-      createFieldCheckbox(container, f, selectedItems.includes(f));
+      if (!selectedFields.includes(f)) {
+        createFieldCheckbox(container, f, false);
+      }
     });
   }
 }
@@ -346,7 +355,7 @@ function applyConfiguration() {
   const listContainer = dom.mainScreen.displayFieldSelector();
   const detailContainer = document.getElementById('displayFieldSelectorDetailView');
   
-  selectedFields = getSelectedFields(listContainer);
+  selectedFields = getSelectedFieldsInOriginalOrder(listContainer);
   selectedDetailFields = getSelectedFieldsInOriginalOrder(detailContainer);
 
   // If no fields selected for detail view, use all fields
@@ -378,6 +387,12 @@ function getSelectedFieldsInOriginalOrder(container) {
   if (container.id === 'displayFieldSelectorDetailView') {
     // For detail view, follow original order
     return selectedDetailFields.filter(field => {
+      const checkbox = document.getElementById(`chk_${container.id}_${field}`);
+      return checkbox?.checked;
+    });
+  } else if (container.id === 'displayFieldSelector') {
+    // For list view, follow original order
+    return selectedFields.filter(field => {
       const checkbox = document.getElementById(`chk_${container.id}_${field}`);
       return checkbox?.checked;
     });
