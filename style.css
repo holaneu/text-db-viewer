@@ -18,7 +18,7 @@ body {
   color: var(--text-color);
 }
 
-header, main {
+main {
   padding: 1rem;
   max-width: 1000px;
   margin: auto;
@@ -40,7 +40,7 @@ h1 {
 label, select, input, button {
   margin: 0.5rem 0;
   font-size: 1rem;
-  display: inline-block; /* Changed from block */
+  display: inline-block;
 }
 
 select, input[type="text"] {
@@ -70,8 +70,8 @@ details summary {
 .hr {
   width: 100%;
   height: 1px;
-  border: 1px solid rgb(88, 88, 88);
-  margin: 10px 0;
+  border-top: 1px solid rgb(88, 88, 88);
+  margin: 1rem 0;
 }
 
 .hidden {
@@ -84,6 +84,11 @@ details summary {
   border-radius: 5px;
   padding: 0.8rem;
   margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+
+.item-card:hover {
+    background-color: #3c3c3c;
 }
 
 .flex-columns {
@@ -92,22 +97,6 @@ details summary {
   gap: 0.5rem;
 }
 
-.filter-row {
-  display: flex;
-  flex-direction: column;
-}
-
-@media (min-width: 600px) {
-  .filter-row {
-    flex-direction: row;
-    gap: 1rem;
-  }
-  .filter-row > div {
-    flex: 1;
-  }
-}
-
-/* Add these new styles */
 .file-input-wrapper {
   position: relative;
   width: 100%;
@@ -121,7 +110,7 @@ details summary {
   border: 2px dashed var(--border-color);
   border-radius: 8px;
   cursor: pointer;
-  font-size: 16px; /* Prevent zoom on mobile */
+  font-size: 16px;
 }
 
 .loading-indicator {
@@ -137,14 +126,6 @@ details summary {
   z-index: 1000;
 }
 
-@supports (-webkit-touch-callout: none) {
-  /* iOS-specific styles */
-  .file-input-wrapper input[type="file"] {
-    padding: 1.2rem;
-  }
-}
-
-/* Add new form layout styles */
 .form-row {
   display: flex;
   align-items: center;
@@ -164,25 +145,6 @@ details summary {
   margin: 0;
 }
 
-/* Update display field selector style */
-#displayFieldSelector {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-#displayFieldSelector > div {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-#displayFieldSelector input[type="checkbox"] {
-  margin: 0;
-}
-
-/* Update mapping controls style */
 #mappingControls > div {
   display: flex;
   align-items: center;
@@ -190,9 +152,8 @@ details summary {
 }
 
 .field-group {
-  /*margin-bottom: 10px;*/
   border-bottom: 1px dashed #333333;
-  padding: 20px 0;
+  padding: 1rem 0;
 }
 
 .field-label {
@@ -201,25 +162,42 @@ details summary {
   margin-bottom: 8px;
 }
 
-/* Update display field selector style */
 .field-selector-section {
   margin: 1rem 0;
 }
 
-.field-selector-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+/* === NEW STYLES FOR SORTABLE LIST === */
+
+.sortable-list {
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   margin-top: 0.5rem;
 }
 
-.field-selector-grid > div {
+.sortable-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.8rem;
+  padding: 0.5rem;
+  background-color: #2a2a2a;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: move;
+  user-select: none;
 }
 
-.field-selector-grid input[type="checkbox"] {
+.sortable-item.dragging {
+  opacity: 0.4;
+  background: var(--accent-color);
+}
+
+.sortable-item label {
+  flex-grow: 1;
+  cursor: inherit; /* Inherit the 'move' cursor */
+}
+
+.sortable-item input[type="checkbox"] {
   margin: 0;
+  cursor: pointer;
 }
-
